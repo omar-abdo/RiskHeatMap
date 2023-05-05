@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Risk Heat Map</title>
+    <!-- Load Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Risk Heat Map</h1>
+    <div id="risktable-wrapper">
+        <table id="risktable">
+            <tr>
+                <th>Risk ID</th>
+                <th>Risk Description</th>
+                <th>Impact</th>
+                <th>Probability</th>
+                <th></th>
+            </tr>
+            <tr>
+                <td><input type="text" id="riskid0" value="1"></td>
+                <td><input type="text" id="riskdesc0"></td>
+                <td><select id="impact0"><option value="">Select Impact</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option></select></td>
+                <td><select id="probability0"><option value="">Select Probability</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option></select></td>
+                <td></td>
+            </tr>
+        </table>
+        <div id="buttons">
+            <button class="rowCtrl" onclick="addRow()">Add Row</button>
+            <button class="rowCtrl" onclick="removeRow()">Remove Row</button>
+        </div>
+    </div>
+    <div style="width: 800px">
+        <canvas id="myChart"></canvas>
+    </div>
+    <button class="chartCtrl" onclick="updateChart()">Update Chart</button>
+    <script>
+        // Get the canvas element and create a new Chart.js instance
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    yAxisID: 'yAxes',
+                    xAxisID: 'xAxes',
+                    label: 'Risk Heat Map',
+                    data: [],
+                    backgroundColor: 'rgba(0, 0, 0, 1)',
+                    borderWidth: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    xAxes: {
+                        min: 10,
+                        max: 40,
+                        ticks: {
+                            stepSize: 10
+                        }
+                    },
+                    yAxes: {
+                        min: 10,
+                        max: 40,
+                        ticks: {
+                            stepSize: 10
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                var label = tooltipItem.dataset.data[tooltipItem.dataIndex].label;
+                                console.log(label);
+                                return 'RiskID: ' + label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: top,
+                        display: false,
+                        label: {
+                            color: 'rgb(0,0,0)'
+                        }
+                    }
+                }
+
+            }
+        });
+
+        // Function to update the chart based on the table data
+        function updateChart() {
+            var data = [];
+            var table = document.getElementById('risktable');
+            // Loop through each row in the table and add it to the chart data
+            for (var i = 0; i < table.rows.length - 1; i++) {
+                console.log("Reading " + i + "...")
+                var riskid = document.getElementById('riskid' + i).value;
+                var riskdesc = document.getElementById('riskdesc' + i).value;
+                var impact = document.getElementById('impact' + i).value;
+                var probability = document.getElementById('probability' + i).value;
+                console.log(riskid)
+                console.log(riskdesc)
+                console.log(impact)
+                console.log(probability)
+                if (riskid && riskdesc && impact && probability) {
+                    data.push({ x: probability, y: impact, r: 40, label: riskid });
+                }
+            }
+            chart.data.datasets[0].data = data;
+            chart.update();
+        }
+
+
+        function addRow() {
+            var table = document.getElementById('risktable');
+            var rowCount = table.rows.length;
+            console.log(rowCount)
+            var row = table.insertRow(rowCount);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+
+            rowCount -= 1;
+            cell1.innerHTML = '<input type="text" id="riskid' + rowCount + '" value="' + (rowCount + 1) + '"> ';
+            cell2.innerHTML = '<input type="text" id="riskdesc' + rowCount + '">';
+            cell3.innerHTML = '<select id="impact' + rowCount + '"><option value="">Select Impact</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option></select>';
+            cell4.innerHTML = '<select id="probability' + rowCount + '"><option value="">Select Probability</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option></select>';
+
+            updateChart();
+        }
+
+        function removeRow(index) {
+            var table = document.getElementById('risktable');
+            table.deleteRow(index);
+            updateChart();
+        }
+
+        function removeRow() {
+            var table = document.getElementById('risktable');
+            var rowCount = table.rows.length;
+            if (rowCount > 2) {
+                table.deleteRow(rowCount - 1);
+                updateChart();
+            }
+        }
+    </script>
+
+    <style>
+        canvas {
+            background: rgb(255,8,8);
+            background: -moz-linear-gradient(216deg, rgba(255,8,8,1) 0%, rgba(255,149,0,1) 50%, rgba(78,255,0,1) 100%);
+            background: -webkit-linear-gradient(216deg, rgba(255,8,8,1) 0%, rgba(255,149,0,1) 50%, rgba(78,255,0,1) 100%);
+            background: linear-gradient(216deg, rgba(255,8,8,1) 0%, rgba(255,149,0,1) 50%, rgba(78,255,0,1) 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ff0808",endColorstr="#4eff00",GradientType=1);
+        }
+
+        .rowCtrl {
+            padding: 6px 6px;
+            margin: 5px 2px 15px 1px;
+        }
+
+        .chartCtrl {
+            padding: 6px 6px;
+            margin: 5px 2px 15px 1px;
+        }
+    </style>
+</body>
+</html>
+
+
